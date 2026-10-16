@@ -30,10 +30,41 @@ jobs:
 
       - name: Dummy google-services.json
         run: |
-          PKG=$(grep '^APP_PACKAGE=' gradle.properties | cut -d= -f2)
-          if [ ! -f TMessagesProj_App/google-services.json ]; then
-            echo "{\"project_info\":{\"project_number\":\"1\",\"project_id\":\"dummy\",\"storage_bucket\":\"dummy.appspot.com\"},\"client\":[{\"client_info\":{\"mobilesdk_app_id\":\"1:1:android:1\",\"android_client_info\":{\"package_name\":\"$PKG\"}},\"api_key\":[{\"current_key\":\"x\"}]}]}" > TMessagesProj_App/google-services.json
-          fi
+          find . -name google-services.json -not -path "*/build/*" -delete
+          PKG=$(grep '^APP_PACKAGE=' gradle.properties | cut -d= -f2 | tr -d '\r')
+          echo "Package: $PKG"
+          cat > TMessagesProj_App/google-services.json <<EOF
+          {
+            "project_info": {
+              "project_number": "123456789012",
+              "project_id": "dummy-project",
+              "storage_bucket": "dummy-project.appspot.com"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:123456789012:android:0123456789abcdef",
+                  "android_client_info": {
+                    "package_name": "$PKG"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "AIzaSyDummyKeyDummyKeyDummyKeyDummyKey1"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
+                  }
+                }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          EOF
+          cat TMessagesProj_App/google-services.json
 
       - name: Build
         run: |
