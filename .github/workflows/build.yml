@@ -1,0 +1,46 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install NDK and CMake
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;27.2.12479018" "cmake;3.22.1" "build-tools;36.0.0" "platforms;android-36"
+
+      - name: Create keystore
+        run: |
+          keytool -genkey -v -keystore Your_Key.jks -alias Your_Alias \
+            -storepass Your_Password -keypass Your_Password \
+            -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Start"
+
+      - name: Dummy google-services.json
+        run: |
+          PKG=$(grep '^APP_PACKAGE=' gradle.properties | cut -d= -f2)
+          if [ ! -f TMessagesProj_App/google-services.json ]; then
+            echo "{\"project_info\":{\"project_number\":\"1\",\"project_id\":\"dummy\",\"storage_bucket\":\"dummy.appspot.com\"},\"client\":[{\"client_info\":{\"mobilesdk_app_id\":\"1:1:android:1\",\"android_client_info\":{\"package_name\":\"$PKG\"}},\"api_key\":[{\"current_key\":\"x\"}]}]}" > TMessagesProj_App/google-services.json
+          fi
+
+      - name: Build
+        run: |
+          chmod +x gradlew
+          ./gradlew :TMessagesProj_App:assembleAfatRelease --no-daemon --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: "**/build/outputs/apk/**/*.apk"
