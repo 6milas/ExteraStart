@@ -47,9 +47,9 @@ public class BuildVars {
     // works only on official app ids, disable on your forks
     public static boolean SUPPORTS_PASSKEYS = Build.VERSION.SDK_INT >= 34;
 
-    static {
-        APP_ID = Extra.INSTANCE.getAppID();
-        APP_HASH = Extra.INSTANCE.getAppHash();
+    static {       
+        APP_ID = 4;
+        APP_HASH = "014b35b6184100b085b0d0572f9b5103";
         PLAYSTORE_APP_URL = Constants.UPDATE_APP_URL;
         HUAWEI_STORE_URL = Constants.UPDATE_APP_URL;
 
